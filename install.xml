@@ -1,0 +1,35 @@
+<install>
+    <name>ofxPSMove</name>
+	<version>0.01</version>
+	<author>james kong</author>
+	<url></url>
+
+	<add>
+
+		<!-- 	=====================================================================	-->
+		<!--	========================== add per project using this addon =========	-->
+		<!-- 	=====================================================================	-->
+
+		<src>
+			<folder name="addons/ofxPSMove/src">						
+				<file>../../../addons/ofxPSMove/src/ofxPSMove.h</file>
+				<file>../../../addons/ofxPSMove/src/ofxPSMove.cpp</file>
+			</folder>
+		</src>
+
+		<include>
+			<path>../../../addons/ofxPSMove/src</path>
+			<path>../../../addons/ofxPSMove/include</path>
+		</include>
+		
+		<link>
+			
+			<lib os="mac"   compiler="xcode">../../../addons/ofxPSMove/libs/libpsmoveapi.2.0.0.dylib</lib>
+            <lib os="mac"   compiler="xcode">../../../addons/ofxPSMove/libs/libpsmoveapi_tracker.2.0.0.dylib</lib>
+			
+		</link>
+		
+	</add>
+	
+	
+</install>
