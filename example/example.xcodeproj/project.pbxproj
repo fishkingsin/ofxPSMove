@@ -9,15 +9,13 @@
 /* Begin PBXBuildFile section */
 		169d3c72fde6c5590a1616f500a456b4 /* ofxCvFloatImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7b6a03390302d5a2c9f0e4ab630ae8d6 /* ofxCvFloatImage.cpp */; };
 		1B66EAD216BF804C007F10A5 /* ofxPSMoveEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B66EAD016BF804C007F10A5 /* ofxPSMoveEvent.cpp */; };
-		1B66EADB16BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B66EAD716BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib */; };
-		1B66EADC16BF8E2D007F10A5 /* libpsmoveapi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B66EAD816BF8E2D007F10A5 /* libpsmoveapi_static.a */; };
-		1B66EADD16BF8E2D007F10A5 /* libpsmoveapi_tracker.2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B66EAD916BF8E2D007F10A5 /* libpsmoveapi_tracker.2.0.0.dylib */; };
-		1B66EADE16BF8E2D007F10A5 /* libpsmoveapi_tracker_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B66EADA16BF8E2D007F10A5 /* libpsmoveapi_tracker_static.a */; };
-		1B66EADF16BF8E4C007F10A5 /* libpsmoveapi.2.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1B66EAD716BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib */; };
 		1d5f3298c2fa073628012944b1efde88 /* ofxCvContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = c76de5c29bdbd2caa1dd0021a7376220 /* ofxCvContourFinder.cpp */; };
 		250a95ba26587be85db0a353e6e1dea2 /* ofxCvColorImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ce9c7160245b19131dae61282ee6cb53 /* ofxCvColorImage.cpp */; };
 		63020f16c7e8ded9801112417e67ad38 /* ofxCvImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = c6151136d101f857dae12722e3c42f4a /* ofxCvImage.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
+		E3F9C36716C01EC0004C9293 /* libpsmoveapi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3F9C36516C01EC0004C9293 /* libpsmoveapi_static.a */; };
+		E3F9C36816C01EC0004C9293 /* libpsmoveapi_tracker_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3F9C36616C01EC0004C9293 /* libpsmoveapi_tracker_static.a */; };
+		E3F9C36A16C01F26004C9293 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E3F9C36916C01F26004C9293 /* IOBluetooth.framework */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E45BE97B0E8CC7DD009D7055 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9710E8CC7DD009D7055 /* AGL.framework */; };
 		E45BE97C0E8CC7DD009D7055 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */; };
@@ -67,7 +65,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				1B66EADF16BF8E4C007F10A5 /* libpsmoveapi.2.0.0.dylib in CopyFiles */,
 				BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,10 +84,6 @@
 		1B66EAD116BF804C007F10A5 /* ofxPSMoveEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxPSMoveEvent.h; path = ../src/ofxPSMoveEvent.h; sourceTree = "<group>"; };
 		1B66EAD316BF83A8007F10A5 /* ofxPSMove.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ofxPSMove.h; path = ../src/ofxPSMove.h; sourceTree = "<group>"; };
 		1B66EAD416BF83FB007F10A5 /* ofxPSMoveData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ofxPSMoveData.h; path = ../src/ofxPSMoveData.h; sourceTree = "<group>"; };
-		1B66EAD716BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpsmoveapi.2.0.0.dylib; sourceTree = "<group>"; };
-		1B66EAD816BF8E2D007F10A5 /* libpsmoveapi_static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpsmoveapi_static.a; sourceTree = "<group>"; };
-		1B66EAD916BF8E2D007F10A5 /* libpsmoveapi_tracker.2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpsmoveapi_tracker.2.0.0.dylib; sourceTree = "<group>"; };
-		1B66EADA16BF8E2D007F10A5 /* libpsmoveapi_tracker_static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpsmoveapi_tracker_static.a; sourceTree = "<group>"; };
 		1e95efd35ed9c5d97f2f015ed292592d /* timer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = timer.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/timer.h; sourceTree = SOURCE_ROOT; };
 		20e7e8c4827254683114e9b7347f8495 /* psmove_config.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = psmove_config.h; path = ../../../addons/ofxPSMove/libs/psmoveapi/include/psmove_config.h; sourceTree = SOURCE_ROOT; };
 		2e411f99e3ab7154484b4f96165f5cff /* kmeans_index.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = kmeans_index.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/kmeans_index.h; sourceTree = SOURCE_ROOT; };
@@ -142,6 +135,9 @@
 		9da0cbd43da38386eb04c9ae7ce0666e /* miniflann.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = miniflann.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/miniflann.hpp; sourceTree = SOURCE_ROOT; };
 		9ff9126184dfbde8a912373ebe9d2f9d /* highgui.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = highgui.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/highgui.h; sourceTree = SOURCE_ROOT; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
+		E3F9C36516C01EC0004C9293 /* libpsmoveapi_static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpsmoveapi_static.a; sourceTree = "<group>"; };
+		E3F9C36616C01EC0004C9293 /* libpsmoveapi_tracker_static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpsmoveapi_tracker_static.a; sourceTree = "<group>"; };
+		E3F9C36916C01F26004C9293 /* IOBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOBluetooth.framework; path = ../../../../../../../System/Library/Frameworks/IOBluetooth.framework; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
@@ -237,10 +233,9 @@
 				E4C2424810CC5A17004149E2 /* Cocoa.framework in Frameworks */,
 				E4C2424910CC5A17004149E2 /* IOKit.framework in Frameworks */,
 				E7E077E515D3B63C0020DFD4 /* CoreVideo.framework in Frameworks */,
-				1B66EADB16BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib in Frameworks */,
-				1B66EADC16BF8E2D007F10A5 /* libpsmoveapi_static.a in Frameworks */,
-				1B66EADD16BF8E2D007F10A5 /* libpsmoveapi_tracker.2.0.0.dylib in Frameworks */,
-				1B66EADE16BF8E2D007F10A5 /* libpsmoveapi_tracker_static.a in Frameworks */,
+				E3F9C36716C01EC0004C9293 /* libpsmoveapi_static.a in Frameworks */,
+				E3F9C36816C01EC0004C9293 /* libpsmoveapi_tracker_static.a in Frameworks */,
+				E3F9C36A16C01F26004C9293 /* IOBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,10 +314,8 @@
 		1B66EAD616BF8E2D007F10A5 /* osx */ = {
 			isa = PBXGroup;
 			children = (
-				1B66EAD716BF8E2D007F10A5 /* libpsmoveapi.2.0.0.dylib */,
-				1B66EAD816BF8E2D007F10A5 /* libpsmoveapi_static.a */,
-				1B66EAD916BF8E2D007F10A5 /* libpsmoveapi_tracker.2.0.0.dylib */,
-				1B66EADA16BF8E2D007F10A5 /* libpsmoveapi_tracker_static.a */,
+				E3F9C36516C01EC0004C9293 /* libpsmoveapi_static.a */,
+				E3F9C36616C01EC0004C9293 /* libpsmoveapi_tracker_static.a */,
 			);
 			path = osx;
 			sourceTree = "<group>";
@@ -477,6 +470,7 @@
 		BBAB23C913894ECA00AA2426 /* system frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E3F9C36916C01F26004C9293 /* IOBluetooth.framework */,
 				E7F985F515E0DE99003869B5 /* Accelerate.framework */,
 				E4C2424410CC5A17004149E2 /* AppKit.framework */,
 				E4C2424510CC5A17004149E2 /* Cocoa.framework */,
@@ -987,8 +981,10 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../libs/psmoveapi/lib/osx\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/../libs/psmoveapi/lib/osx\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
 				WRAPPER_EXTENSION = app;
@@ -1075,8 +1071,10 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../libs/psmoveapi/lib/osx\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/../libs/psmoveapi/lib/osx\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
