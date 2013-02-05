@@ -62,6 +62,10 @@ namespace ofxPSMove {
 	{
 		
 		count = psmove_count_connected();
+		if(count<=0)
+		{
+			ofLogWarning("ofxPSMoveReciver") << "None of the PSMove device found!!!";
+		}
 		bSetup.resize(count);
 		move.resize(count);
 		psmoveData.resize(count);
@@ -71,8 +75,8 @@ namespace ofxPSMove {
 			move[id] = psmove_connect_by_id(id);
 			
 			if (move[id] == NULL) {
-				ofLog(OF_LOG_ERROR,"Could not connect to default Move controller.\n"
-					  "Please connect one via USB or Bluetooth.\n");
+				ofLogError("ofxPSMoveReciver") <<"Could not connect to default Move controller.\n"
+					  "Please connect one via USB or Bluetooth.";
 				
 				bSetup[id] = false;
 			}
@@ -84,19 +88,19 @@ namespace ofxPSMove {
 			{
 				
 				char *serial = psmove_get_serial(move[id]);
-				ofLog(OF_LOG_VERBOSE,"Serial: %s\n", serial);
+				ofLogVerbose("ofxPSMoveReciver") <<"Serial: %s"<< serial;
 				free(serial);
 				
 				ctype = psmove_connection_type(move[id]);
 				switch (ctype) {
 					case Conn_USB:
-						ofLog(OF_LOG_NOTICE,"Connected via USB.\n");
+						ofLogNotice("ofxPSMoveReciver") <<"Connected via USB";
 						break;
 					case Conn_Bluetooth:
-						ofLog(OF_LOG_NOTICE,"Connected via Bluetooth.\n");
+						ofLogNotice("ofxPSMoveReciver") <<"Connected via Bluetooth.";
 						break;
 					case Conn_Unknown:
-						ofLog(OF_LOG_WARNING,"Unknown connection type.\n");
+						ofLogNotice("ofxPSMoveReciver") <<"Unknown connection type.";
 						break;
 				}
 				
