@@ -151,11 +151,36 @@ enum PSMove_Bool {
     PSMove_True = 1, /*!< True, Success, Enabled (depending on context) */
 };
 
+/*! Remote configuration options, for psmove_set_remote_config() */
+enum PSMove_RemoteConfig {
+    PSMove_LocalAndRemote = 0, /*!< Use both local (hidapi) and remote (moved) devices */
+    PSMove_OnlyLocal = 1, /*!< Use only local (hidapi) devices, ignore remote devices */
+    PSMove_OnlyRemote = 2, /*!< Use only remote (moved) devices, ignore local devices */
+};
+
 #ifndef SWIG
 struct _PSMove;
 typedef struct _PSMove PSMove; /*!< Handle to a PS Move Controller.
                                     Obtained via psmove_connect_by_id() */
 #endif
+
+/**
+ * \brief Enable or disable the usage of local or remote devices
+ *
+ * By default, both local (hidapi) and remote (moved) controllers will be
+ * used. If your application only wants to use locally-connected devices,
+ * and ignore any remote controllers, call this function with
+ * \ref PSMove_OnlyLocal - to use only remotely-connected devices, use
+ * \ref PSMove_OnlyRemote instead.
+ *
+ * This function must be called before any other PS Move API functions are
+ * used, as it changes the behavior of counting and connecting to devices.
+ *
+ * \param config \ref PSMove_LocalAndRemote, \ref PSMove_OnlyLocal or
+ *               \ref PSMove_OnlyRemote
+ **/
+ADDAPI void
+ADDCALL psmove_set_remote_config(enum PSMove_RemoteConfig config);
 
 /**
  * \brief Get the number of available controllers
@@ -811,14 +836,14 @@ ADDCALL psmove_has_orientation(PSMove *move);
  * preconditions are fulfilled to do orientation tracking.
  *
  * \param move A valid \ref PSMove handle
- * \param q0 A pointer to store the first part of the orientation quaternion
- * \param q1 A pointer to store the second part of the orientation quaternion
- * \param q2 A pointer to store the third part of the orientation quaternion
- * \param q3 A pointer to store the fourth part of the orientation quaternion
+ * \param w A pointer to store the w part of the orientation quaternion
+ * \param x A pointer to store the x part of the orientation quaternion
+ * \param y A pointer to store the y part of the orientation quaternion
+ * \param z A pointer to store the z part of the orientation quaternion
  **/
 ADDAPI void
 ADDCALL psmove_get_orientation(PSMove *move,
-        float *q0, float *q1, float *q2, float *q3);
+        float *w, float *x, float *y, float *z);
 
 /**
  * \brief Reset the current orientation quaternion.
@@ -832,6 +857,43 @@ ADDCALL psmove_get_orientation(PSMove *move,
 ADDAPI void
 ADDCALL psmove_reset_orientation(PSMove *move);
 
+
+/**
+ * \brief Reset the magnetometer calibration state.
+ *
+ * This will reset the magnetometer calibration data, so they can be
+ * re-adjusted dynamically. Used by the calibration utility.
+ *
+ * \ref move A valid \ref PSMove handle
+ **/
+ADDAPI void
+ADDCALL psmove_reset_magnetometer_calibration(PSMove *move);
+
+/**
+ * \brief Save the magnetometer calibration values.
+ *
+ * This will save the magnetometer calibration data to persistent storage.
+ * If a calibration already exists, this will overwrite the old values.
+ *
+ * \param move A valid \ref PSMove handle
+ **/
+ADDAPI void
+ADDCALL psmove_save_magnetometer_calibration(PSMove *move);
+
+/**
+ * \brief Return the raw magnetometer calibration range.
+ *
+ * The magnetometer calibration is dynamic at runtime - this function returns
+ * the raw range of magnetometer calibration. The user should rotate the
+ * controller in all directions to find the response range of the controller
+ * (this will be dynamically adjusted).
+ *
+ * \param move A valid \ref PSMove handle
+ *
+ * \return The smallest raw sensor range difference of all three axes
+ **/
+ADDAPI int
+ADDCALL psmove_get_magnetometer_calibration_range(PSMove *move);
 
 /**
  * \brief Disconnect from the PS Move and release resources.
@@ -909,25 +971,30 @@ ADDAPI char *
 ADDCALL psmove_util_get_file_path(const char *filename);
 
 /**
- * Utility function: Get an integer from the environment
+ * \brief Get an integer from an environment variable
  *
- * Returns the integer value of the environment variable, or -1 if
- * the variable is not set or could not be parsed as integer.
+ * Utility function used to get configuration from environment
+ * variables.
  *
- * name ... The name of the environment variable
+ * \param name The name of the environment variable
+ *
+ * \return The integer value of the environment variable, or -1 if
+ *         the variable is not set or could not be parsed as integer.
  **/
 ADDAPI int
 ADDCALL psmove_util_get_env_int(const char *name);
 
 /**
- * Utility function: Get a string from the environment
+ * \brief Get a string from an environment variable
  *
- * Returns the string value of the environment variable, or NULL if
- * the variable is not set.
+ * Utility function used to get configuration from environment
+ * variables.
  *
- * name ... The name of the environment variable
+ * \param name The name of the environment variable
  *
- * The returned value must be free()d after use.
+ * \return The string value of the environment variable, or NULL if the
+ *         variable is not set. The caller must free() the result when
+ *         it is not needed anymore.
  **/
 ADDAPI char *
 ADDCALL psmove_util_get_env_string(const char *name);
