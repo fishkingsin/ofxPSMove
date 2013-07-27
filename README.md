@@ -33,6 +33,8 @@ of_v0073_osx_release
 Known issues
 ------------
 alpha test
+currently only work with controller and get all the sensor and button event, not work and interact with PSEye
+suggested to use https://github.com/paulobarcelos/ofxMacamPs3Eye
 
 Version history
 ------------
