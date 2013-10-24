@@ -40,3 +40,7 @@ Version history
 ------------
 
 ### Version 0.1 (Date):
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/fishkingsin/ofxpsmove/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
