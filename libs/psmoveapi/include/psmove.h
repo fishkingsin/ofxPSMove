@@ -77,17 +77,24 @@ enum PSMove_Connection_Type {
  * Used by psmove_get_buttons() and psmove_get_button_events().
  **/
 enum PSMove_Button {
-    Btn_TRIANGLE = 1 << 0x04, /*!< Green triangle */
-    Btn_CIRCLE = 1 << 0x05, /*!< Red circle */
-    Btn_CROSS = 1 << 0x06, /*!< Blue cross */
-    Btn_SQUARE = 1 << 0x07, /*!< Pink square */
+    /**
+     * See comment in psmove_get_buttons() for how this is
+     * laid out in the input report.
+     *
+     * Source:
+     * https://github.com/nitsch/moveonpc/wiki/Input-report
+     **/
+    Btn_TRIANGLE = 1 << 4, /*!< Green triangle */
+    Btn_CIRCLE = 1 << 5, /*!< Red circle */
+    Btn_CROSS = 1 << 6, /*!< Blue cross */
+    Btn_SQUARE = 1 << 7, /*!< Pink square */
 
-    Btn_SELECT = 1 << 0x08, /*!< Select button, left side */
-    Btn_START = 1 << 0x0B, /*!< Start button, right side */
+    Btn_SELECT = 1 << 8, /*!< Select button, left side */
+    Btn_START = 1 << 11, /*!< Start button, right side */
 
-    Btn_MOVE = 1 << 0x13, /*!< Move button, big front button */
-    Btn_T = 1 << 0x14, /*!< Trigger, on the back */
-    Btn_PS = 1 << 0x10, /*!< PS button, front center */
+    Btn_PS = 1 << 16, /*!< PS button, front center */
+    Btn_MOVE = 1 << 19, /*!< Move button, big front button */
+    Btn_T = 1 << 20, /*!< Trigger, on the back */
 
 #if 0
     /* Not used for now - only on Sixaxis/DS3 or nav controller */
@@ -158,11 +165,107 @@ enum PSMove_RemoteConfig {
     PSMove_OnlyRemote = 2, /*!< Use only remote (moved) devices, ignore local devices */
 };
 
+enum PSMoveOrientation_Fusion_Type {
+	OrientationFusion_None,
+	OrientationFusion_MadgwickIMU,
+	OrientationFusion_MadgwickMARG,
+	OrientationFusion_ComplementaryMARG,
+};
+
+/*! Common Calibration Poses */
+enum PSMove_CalibrationPose_Type {
+    CalibrationPose_Upright,
+    CalibrationPose_LyingFlat
+};
+
+/*! Coordinate systems to use for the sensor data */
+enum PSMove_SensorDataBasis_Type {
+    SensorDataBasis_Native,
+    SensorDataBasis_OpenGL,
+};
+
 #ifndef SWIG
 struct _PSMove;
 typedef struct _PSMove PSMove; /*!< Handle to a PS Move Controller.
                                     Obtained via psmove_connect_by_id() */
 #endif
+
+/*! Size of buffer for holding the extension device's data as reported by the Move */
+#define PSMOVE_EXT_DATA_BUF_SIZE 5
+
+/*! Buffer for holding the extension device's data as reported by the Move */
+typedef unsigned char PSMove_Ext_Data[PSMOVE_EXT_DATA_BUF_SIZE];
+
+/*! Extension device information */
+typedef struct {
+    unsigned short dev_id;
+    unsigned char dev_info[38];
+} PSMove_Ext_Device_Info;
+
+/* A 3d vector - methods in math/psmove_vector.h */
+struct _PSMove_3AxisVector
+{
+	union {
+		struct
+		{
+			float x;
+			float y;
+			float z;
+		};
+		float v[3];
+	};
+};
+typedef struct _PSMove_3AxisVector PSMove_3AxisVector;
+
+/* A 3x3 transform matrix - methods in math/psmove_vector.h */
+struct _PSMove_3AxisTransform
+{
+	union {
+		struct
+		{
+			float row0[3];
+			float row1[3];
+			float row2[3];
+		};
+		float m[9];
+	};
+};
+typedef struct _PSMove_3AxisTransform PSMove_3AxisTransform;
+
+/*! Library version number */
+enum PSMove_Version {
+    /**
+     * Version format: AA.BB.CC = 0xAABBCC
+     *
+     * Examples:
+     *  3.0.1 = 0x030001
+     *  4.2.11 = 0x04020B
+     **/
+    PSMOVE_CURRENT_VERSION = 0x030001, /*!< Current version, see psmove_init() */
+};
+    
+/**
+ * \brief Initialize the library and check for the right version
+ *
+ * This library call should be used at the beginning of each application using
+ * the PS Move API to check if the correct version of the library is loaded (for
+ * dynamically-loaded versions of the PS Move API).
+ *
+ * \code
+ *    if (!psmove_init(PSMOVE_CURRENT_VERSION)) {
+ *        fprintf(stderr, "PS Move API init failed (wrong version?)\n");
+ *        exit(1);
+ *    }
+ * \endcode
+ *
+ * \param version Should be \ref PSMOVE_CURRENT_VERSION to check for the same
+ *                version as was used at compile-time
+ *
+ * \return \ref PSMove_True on success (version compatible, library initialized)
+ * \return \ref PSMove_False otherwise (version mismatch, initialization error)
+ **/
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_init(enum PSMove_Version version);
 
 /**
  * \brief Enable or disable the usage of local or remote devices
@@ -319,13 +422,13 @@ ADDCALL psmove_pair(PSMove *move);
  * specify a custom Bluetooth host address.
  *
  * \param move A valid \ref PSMove handle
- * \param btaddr_string The host address in the format \c "aa:bb:cc:dd:ee:ff"
+ * \param new_host_string The host address in the format \c "aa:bb:cc:dd:ee:ff"
  *
  * \return \ref PSMove_True if the pairing was successful
  * \return \ref PSMove_False if the pairing failed
  **/
 ADDAPI enum PSMove_Bool
-ADDCALL psmove_pair_custom(PSMove *move, const char *btaddr_string);
+ADDCALL psmove_pair_custom(PSMove *move, const char *new_host_string);
 
 /**
  * \brief Enable or disable LED update rate limiting.
@@ -370,6 +473,38 @@ ADDCALL psmove_set_rate_limiting(PSMove *move, enum PSMove_Bool enabled);
 ADDAPI void
 ADDCALL psmove_set_leds(PSMove *move, unsigned char r, unsigned char g,
         unsigned char b);
+
+/**
+ * \brief Set the PWM frequency used in dimming the RGB LEDs.
+ *
+ * The RGB LEDs in the Move controller are dimmed using pulse-width modulation (PWM).
+ * This function lets you modify the PWM frequency. The default is around 188 kHz and
+ * can also be restored by resetting the controller (using the small reset button on
+ * the back).
+ *
+ * \note Make sure to switch off the LEDs prior to calling this function. If you do
+ *       not do this, changing the PWM frequency will switch off the LEDs and keep
+ *       them off until the Bluetooth connection has been teared down and then
+ *       reestablished.
+ *
+ * \note Frequency values outside the valid range (see the parameter description) are
+ *       treated as errors.
+ *
+ * \note Even though the controller lets you increase the frequency to several
+ *       Megahertz, there is usually not much use in operating at such extreme rates.
+ *       Additionally, you will even lose resolution at these rates, i.e. the number
+ *       of distinct LED intensities between "off" and "fully lit" decreases. For
+ *       example: at 7 MHz there are only 5 different intensities left instead of the
+ *       usual 256. This is not a feature of PWM per se but is rather due to
+ *       software/hardware limitations of the Move controller.
+ *
+ * \param freq The PWM frequency in Hertz (range is 733 Hz to 24 MHz)
+ *
+ * \return \ref PSMove_True on success
+ * \return \ref PSMove_False on error
+ */
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_set_led_pwm_frequency(PSMove *move, unsigned long freq);
 
 /**
  * \brief Set the rumble intensity of the PS Move controller.
@@ -463,6 +598,35 @@ ADDAPI int
 ADDCALL psmove_poll(PSMove *move);
 
 /**
+ * \brief Get the extension device's data as reported by the Move.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param data Pointer to store the data, must not be \ref NULL
+ *
+ * \return \ref PSMove_True on success
+ * \return \ref PSMove_False on error
+ * 
+ **/
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_get_ext_data(PSMove *move, PSMove_Ext_Data *data);
+
+/**
+ * \brief Send data to a connected extension device.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param data Pointer to the data which to send
+ * \param length Number of bytes in \ref data
+ *
+ * \return \ref PSMove_True on success
+ * \return \ref PSMove_False on error
+ **/
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_send_ext_data(PSMove *move, const unsigned char *data, unsigned char length);
+
+/**
  * \brief Get the current button states from the controller.
  *
  * The status of the buttons is described as a bitfield, with a bit
@@ -529,6 +693,33 @@ ADDCALL psmove_get_button_events(PSMove *move, unsigned int *pressed,
         unsigned int *released);
 
 /**
+ * \brief Check if an extension device is connected to the controller.
+ *
+ * \param move A valid \ref PSMove handle
+ *
+ * \return \ref PSMove_True if an extension device is connected
+ * \return \ref PSMove_False if no extension device is connected or in case of an error
+ **/
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_is_ext_connected(PSMove *move);
+
+/**
+ * \brief Get information from an extension device connected to the controller.
+ *
+ * \note Since the information is retrieved from the extension device itself, a
+ * noticeable delay may occur when calling this function.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param ext Pointer to a \ref PSMove_Ext_Device_Info that will store the
+ *            information. Must not be \ref NULL.
+ *
+ * \return \ref PSMove_True on success
+ * \return \ref PSMove_False on error
+ **/
+ADDAPI enum PSMove_Bool
+ADDCALL psmove_get_ext_device_info(PSMove *move, PSMove_Ext_Device_Info *info);
+
+/**
  * \brief Get the battery charge level of the controller.
  *
  * This function retrieves the charge level of the controller or
@@ -546,12 +737,10 @@ ADDAPI enum PSMove_Battery_Level
 ADDCALL psmove_get_battery(PSMove *move);
 
 /**
- * \brief Get the current raw temperature reading of the controller.
+ * \brief Get the current raw device temperature reading of the
+ * controller.
  *
  * This gets the raw sensor value of the internal temperature sensor.
- *
- * \bug Right now, the value range of the temperature sensor is now
- *      known, so you have to experiment with the values yourself.
  *
  * You need to call psmove_poll() first to read new data from the
  * controller.
@@ -562,6 +751,31 @@ ADDCALL psmove_get_battery(PSMove *move);
  **/
 ADDAPI int
 ADDCALL psmove_get_temperature(PSMove *move);
+
+/**
+ * \brief Get the current device temperature reading in degree
+ * Celsius.
+ *
+ * This gets the raw temperature sensor value of the internal
+ * temperature sensor and then converts it to degree Celsius.
+ *
+ * The result range is -10..70 °C. Values outside this range will be
+ * clipped.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \note This is NOT room temperature, but the temperature of a small
+ * thermistor on the controller's PCB. This means that under normal
+ * operation the temperature returned by this function will be higher
+ * than room temperature due to heat up from current flow.
+ *
+ * \param move A valid \ref PSMove handle
+ *
+ * \return The temperature sensor reading in degree Celsius
+ **/
+ADDAPI float
+ADDCALL psmove_get_temperature_in_celsius(PSMove *move);
 
 /**
  * \brief Get the value of the PS Move analog trigger.
@@ -726,6 +940,29 @@ ADDCALL psmove_get_gyroscope_frame(PSMove *move, enum PSMove_Frame frame,
         float *gx, float *gy, float *gz);
 
 /**
+ * \brief Get the raw magnetometer reading from the PS Move.
+ *
+ * This function reads the raw sensor values from the controller,
+ * pointing to magnetic north.
+ *
+ * The result value range is -2048..+2047. The magnetometer is located
+ * roughly below the glowing orb - you can glitch the values with a
+ * strong kitchen magnet by moving it around the bottom ring of the orb.
+ * You can detect if a magnet is nearby by checking if any two values
+ * stay at zero for several frames.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param mx Pointer to store the raw X axis reading, or \c NULL
+ * \param my Pointer to store the raw Y axis reading, or \c NULL
+ * \param mz Pointer to store the raw Z axis reading, or \c NULL
+ **/
+ADDAPI void
+ADDCALL psmove_get_magnetometer(PSMove *move, int *mx, int *my, int *mz);
+
+/**
  * \brief Get the normalized magnetometer vector from the controller.
  *
  * The normalized magnetometer vector is a three-axis vector where each
@@ -743,8 +980,62 @@ ADDCALL psmove_get_gyroscope_frame(PSMove *move, enum PSMove_Frame frame,
  * \param mz Pointer to store the Z axis reading, or \c NULL
  **/
 ADDAPI void
-ADDCALL psmove_get_magnetometer_vector(PSMove *move,
-        float *mx, float *my, float *mz);
+ADDCALL psmove_get_magnetometer_vector(PSMove *move, float *mx, float *my, float *mz);
+
+/**
+ * \brief Get the normalized magnetometer vector from the controller.
+ *
+ * The normalized magnetometer vector is a three-axis vector where each
+ * component is in the range [-1,+1], including both endpoints. The range
+ * will be dynamically determined based on the highest (and lowest) value
+ * observed during runtime. To get the raw magnetometer readings, use
+ * psmove_get_magnetometer().
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param out_m The output \ref PSMove_3AxisVector
+ **/
+ADDAPI void
+ADDCALL psmove_get_magnetometer_3axisvector(PSMove *move, PSMove_3AxisVector *out_m);
+
+/**
+ * \brief Reset the magnetometer calibration state.
+ *
+ * This will reset the magnetometer calibration data, so they can be
+ * re-adjusted dynamically. Used by the calibration utility.
+ *
+ * \ref move A valid \ref PSMove handle
+ **/
+ADDAPI void
+ADDCALL psmove_reset_magnetometer_calibration(PSMove *move);
+
+/**
+ * \brief Save the magnetometer calibration values.
+ *
+ * This will save the magnetometer calibration data to persistent storage.
+ * If a calibration already exists, this will overwrite the old values.
+ *
+ * \param move A valid \ref PSMove handle
+ **/
+ADDAPI void
+ADDCALL psmove_save_magnetometer_calibration(PSMove *move);
+
+/**
+ * \brief Return the raw magnetometer calibration range.
+ *
+ * The magnetometer calibration is dynamic at runtime - this function returns
+ * the raw range of magnetometer calibration. The user should rotate the
+ * controller in all directions to find the response range of the controller
+ * (this will be dynamically adjusted).
+ *
+ * \param move A valid \ref PSMove handle
+ *
+ * \return The smallest raw sensor range difference of all three axes
+ **/
+ADDAPI float
+ADDCALL psmove_get_magnetometer_calibration_range(PSMove *move);
 
 /**
  * \brief Check if calibration is available on this controller.
@@ -852,48 +1143,237 @@ ADDCALL psmove_get_orientation(PSMove *move,
  * quaternion. You can use this function to re-adjust the orientation of the
  * controller when it points towards the camera.
  *
+ * This function will automatically be called by psmove_enable_orientation(),
+ * but you might want to call it manually when the controller points towards
+ * the screen/camera for accurate orientation readings relative to a
+ * known-good orientation of the controller.
+ *
  * \param move A valid \ref PSMove handle
  **/
 ADDAPI void
 ADDCALL psmove_reset_orientation(PSMove *move);
 
-
 /**
- * \brief Reset the magnetometer calibration state.
+ * \brief Set the orientation fusion algorithm to use.
  *
- * This will reset the magnetometer calibration data, so they can be
- * re-adjusted dynamically. Used by the calibration utility.
- *
- * \ref move A valid \ref PSMove handle
+ * There are currently the following orientation filter algorithms available:
+ * OrientationFusion_MadgwickIMU - Classic MadgwickIMU: Gyro integration + Gravity correction
+ *  - 1st Least expensive
+ *  - Con: Suffers from pretty bad drift
+ * OrientationFusion_MadgwickMARG - Classic MadgwickMARG: Gyro integration + Gravity/Magnetometer correction
+ *  - 2nd least expensive
+ *  - Con: Suffers from slow drift about the yaw
+ * OrientationFusion_ComplementaryMARG - Gyro integration blended with optimized Gravity/Magnetometer alignment
+ *  - Suffers no drift
+ *  - Con: Most expensive algorithms of the three (but not horrendously so)
+
+ * \param move A valid \ref PSMove handle
+ * \param fusion_type The orientation fusion algorithm denoted by the \ref PSMoveOrientation_Fusion_Type enum
  **/
 ADDAPI void
-ADDCALL psmove_reset_magnetometer_calibration(PSMove *move);
+ADDCALL psmove_set_orientation_fusion_type(PSMove *move, enum PSMoveOrientation_Fusion_Type fusion_type);
 
 /**
- * \brief Save the magnetometer calibration values.
+ * \brief Set a common transform used on the calibration data in the psmove_get_transform_<sensor>_... methods
  *
- * This will save the magnetometer calibration data to persistent storage.
- * If a calibration already exists, this will overwrite the old values.
+ * This method sets the transform used to modify the calibration vectors returned by:
+ * - psmove_orientation_get_magnetometer_calibration_direction()
+ * - psmove_orientation_get_gravity_calibration_direction()
  *
- * \param move A valid \ref PSMove handle
+ * The transformed calibration data is used by the orientation filter to compute 
+ * a quaternion (see \ref psmove_orientation_get_quaternion) that represents 
+ * the controllers current rotation from the "identity pose".
+ * 
+ * Historically, the "identity pose" bas been with the controller laying flat
+ * with the controller pointing at the screen. However, now that we have a
+ * calibration step that record the magnetic field direction relative to 
+ * gravity it makes more sense to make the identity pose with the controller 
+ * sitting vertically since it's more stable to record that way. 
+ *  
+ * In order to maintain reverse compatibility, this transform defaults to rotating
+ * the vertically recorded calibration vectors 90 degrees about X axis as if the 
+ * controller was laying flat during calibration.
+ *
+ * Therefore, if you want a different "identity pose" then the default,
+ * use this method to set a custom transform.
+ *
+ * There are the following transforms available:
+ * - CalibrationPose_Upright - "identity pose" is the controller standing upright
+ * - CalibrationPose_LyingFlat - "identity pose" is the controller laying down pointed at the screen
+ *
+ * \param orientation_state A valid \ref PSMoveOrientation handle
+ * \param transform A \ref PSMove_CalibrationPose_Type common transform to apply to the calibration data
  **/
 ADDAPI void
-ADDCALL psmove_save_magnetometer_calibration(PSMove *move);
+ADDCALL psmove_set_calibration_pose(PSMove *move, enum PSMove_CalibrationPose_Type calibration_pose);
 
 /**
- * \brief Return the raw magnetometer calibration range.
+* \brief Set the custom transform used on the calibration data in the psmove_get_transform_<sensor>_... methods
+*
+* \param orientation_state A valid \ref PSMoveOrientation handle
+* \param transform A \ref PSMove_3AxisTransform transform to apply to the calibration data
+**/
+ADDAPI void
+ADDCALL psmove_set_calibration_transform(PSMove *move, const PSMove_3AxisTransform *transform);
+
+/**
+* \brief Get the native earth gravity direction.
+*
+* This returns the native direction of the gravitational field in the identity pose during calibration.
+*
+* \param move A valid \ref PSMove handle
+*
+* \return The expected direction of gravity
+**/
+ADDAPI void
+ADDCALL psmove_get_identity_gravity_calibration_direction(PSMove *move, PSMove_3AxisVector *out_a);
+
+/**
+* \brief Get the transformed earth gravity direction.
+*
+* This returns the direction of the gravitational field in the transformed identity pose.
+*
+* \param move A valid \ref PSMove handle
+*
+* \return The transformed expected direction of gravity
+**/
+ADDAPI void
+ADDCALL psmove_get_transformed_gravity_calibration_direction(PSMove *move, PSMove_3AxisVector *out_a);
+
+/**
+* \brief Get the calibration magnetometer direction.
+*
+* This returns the direction of the magnetic field in the un-transformed identity pose.
+*
+* \param move A valid \ref PSMove handle
+*
+* \return The direction of the magnetic field
+**/
+ADDAPI void
+ADDCALL psmove_get_identity_magnetometer_calibration_direction(PSMove *move, PSMove_3AxisVector *out_m);
+
+/**
+* \brief Get the transformed calibration magnetometer direction.
+*
+* This returns the direction of the magnetic field in the transformed identity pose.
+*
+* \param move A valid \ref PSMove handle
+* \param out_m The output \ref PSMove_3AxisVector
+**/
+ADDAPI void
+ADDCALL psmove_get_transformed_magnetometer_calibration_direction(PSMove *move, PSMove_3AxisVector *out_m);
+
+/**
+* \brief Set the calibration magnetometer direction.
+*
+* This sets the direction of the magnetic field in the identity pose.
+* This is typically only set during calibration.
+*
+* \param move A valid \ref PSMove handle
+* \param m A valid \ref PSMoveVector
+**/
+ADDAPI void
+ADDCALL psmove_set_magnetometer_calibration_direction(PSMove *move, PSMove_3AxisVector *m);
+
+/**
+ * \brief Set the transform used on the sensor data in the psmove_get_transform_<sensor>_... methods
  *
- * The magnetometer calibration is dynamic at runtime - this function returns
- * the raw range of magnetometer calibration. The user should rotate the
- * controller in all directions to find the response range of the controller
- * (this will be dynamically adjusted).
+ * This method sets the transform used to modify the sensor vectors returned by:
+ * - psmove_get_transformed_magnetometer_3axisvector()
+ * - psmove_get_transformed_accelerometer_frame_3axisvector()
+ * - psmove_get_transformed_accelerometer_frame_direction()
+ * - psmove_get_transformed_gyroscope_frame_3axisvector()
+ *
+ * The transformed sensor data is used by the orientation filter to compute 
+ * a quaternion (see \ref psmove_orientation_get_quaternion) that represents 
+ * the controllers current rotation from the "identity pose".
+ * 
+ * Historically, the sensor data in the orientation code has been rotated 90 degrees 
+ * clockwise about the x-axis. The original Madgwick orientation filter was coded to assume
+ * an OpenGL style coordinate system (+x=right, +y=up, +z=out of screen), rather than 
+ * than PSMoves coordinate system where:
+ *
+ * +x = From Select to Start button
+ * +y = From Trigger to Move button
+ * +z = From glowing orb to USB connector
+ *
+ * The current default sets the sensor transform to assume an OpenGL style coordinate system
+ * in order to maintain reverse compatibility
+ *
+ * There are the following transforms available:
+ * - SensorDataBasis_Native - Keep the sensor data as it was
+ * - SensorDataBasis_OpenGL - Rotate 90 degrees about the x-axis (historical default)
+ *
+ * \param orientation_state A valid \ref PSMoveOrientation handle
+ * \param transform A \ref PSMove_SensorDataBasis_Type transform to apply to the sensor data
+ **/
+ADDAPI void
+ADDCALL psmove_set_sensor_data_basis(PSMove *move, enum PSMove_SensorDataBasis_Type basis_type);
+
+/**
+* \brief Set the transform used on the sensor data in the psmove_get_transform_<sensor>_... methods
+*
+* \param orientation_state A valid \ref PSMoveOrientation handle
+* \param transform A \ref PSMove_3AxisTransform transform to apply to the sensor data
+**/
+ADDAPI void
+ADDCALL psmove_set_sensor_data_transform(PSMove *move, const PSMove_3AxisTransform *transform);
+
+/**
+ * \brief Get the transformed current magnetometer direction.
+ *
+ * This returns the current normalized direction of the magnetic field with the sensor transform applied.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
  *
  * \param move A valid \ref PSMove handle
- *
- * \return The smallest raw sensor range difference of all three axes
+ * \param out_m The output \ref PSMove_3AxisVector
  **/
-ADDAPI int
-ADDCALL psmove_get_magnetometer_calibration_range(PSMove *move);
+ADDAPI void
+ADDCALL psmove_get_transformed_magnetometer_direction(PSMove *move, PSMove_3AxisVector *out_m);
+
+/**
+ * \brief Get the transformed current accelerometer vector.
+ *
+ * This returns the current non-normalized vector of the accelerometer with the sensor transform applied.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param out_a The output \ref PSMove_3AxisVector
+ **/
+ADDAPI void
+ADDCALL psmove_get_transformed_accelerometer_frame_3axisvector(PSMove *move, enum PSMove_Frame frame, PSMove_3AxisVector *out_a);
+
+/**
+ * \brief Get the transformed normalized current accelerometer direction.
+ *
+ * This returns the current normalized direction of the accelerometer with the sensor transform applied.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param out_a The output \ref PSMove_3AxisVector
+ **/
+ADDAPI void
+ADDCALL psmove_get_transformed_accelerometer_frame_direction(PSMove *move, enum PSMove_Frame frame, PSMove_3AxisVector *out_a);
+
+/**
+ * \brief Get the transformed current gyroscope vector.
+ *
+ * This returns the current gyroscope vector (omega) with the sensor transform applied.
+ *
+ * You need to call psmove_poll() first to read new data from the
+ * controller.
+ *
+ * \param move A valid \ref PSMove handle
+ * \param out_w The output \ref PSMove_3AxisVector
+ **/
+ADDAPI void
+ADDCALL psmove_get_transformed_gyroscope_frame_3axisvector(PSMove *move, enum PSMove_Frame frame, PSMove_3AxisVector *out_w);
 
 /**
  * \brief Disconnect from the PS Move and release resources.
@@ -969,6 +1449,23 @@ ADDCALL psmove_util_get_data_dir();
  **/
 ADDAPI char *
 ADDCALL psmove_util_get_file_path(const char *filename);
+
+/**
+ * \brief Get a filename path in the system save directory.
+ *
+ * This is a convenience function, which gives the absolute path for
+ * a file stored in system-wide data directory.
+ *
+ * The data directory will NOT be created in case it doesn't exist yet.
+ *
+ * \param filename The basename of the file (e.g. \c myfile.txt)
+ *
+ * \return The absolute filename to the file. The caller must
+ *         free() the result when it is not needed anymore.
+ * \return On error, \c NULL is returned.
+ **/
+ADDAPI char *
+ADDCALL psmove_util_get_system_file_path(const char *filename);
 
 /**
  * \brief Get an integer from an environment variable
